@@ -6,17 +6,28 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Keepnet Training – Welcome</title>
   <script src="https://res.cdn.office.net/teams-js/2.24.0/js/MicrosoftTeams.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        await microsoftTeams.app.initialize();              // handshake
-        const ctx = await microsoftTeams.app.getContext();  // tema vb.
-        console.log('Teams initialized', ctx?.app?.theme);
-      } catch (e) {
-        console.error('Teams init error', e);
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      await microsoftTeams.app.initialize(); // Teams handshake
+      const ctx = await microsoftTeams.app.getContext();
+      console.log('Teams initialized', ctx?.app?.theme);
+    } catch (e) {
+      console.warn('Teams init error (önemli değil)', e);
+    }
+
+    // Query string parametreyi al
+    const p = new URLSearchParams(window.location.search);
+    const name = p.get('n');
+    if (name) {
+      const h1 = document.querySelector('h1');
+      if (h1) {
+        h1.textContent = `Merhaba ${name}`;
       }
-    });
-  </script>
+    }
+  });
+</script>
+
   
   <style>
     html,
@@ -72,17 +83,7 @@
       <a class="button" href="https://keepnetlabs.com" target="_blank" rel="noreferrer">Eğitime Git</a>
     </div>
   </div>
-  <script>
-  document.addEventListener('DOMContentLoaded', async () => {
-    try { await microsoftTeams.app.initialize(); } catch {}
-    const p = new URLSearchParams(location.search);
-    const name = p.get('n');
-    if (name) {
-      const h1 = document.querySelector('h1');
-      if (h1) h1.textContent = `Merhaba ${name}`;
-    }
-  });
-</script>
+
 </body>
 
 </html>
