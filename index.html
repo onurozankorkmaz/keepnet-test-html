@@ -17,6 +17,7 @@
       }
     });
   </script>
+  
   <style>
     html,
     body {
@@ -67,10 +68,21 @@
   <div class="wrap">
     <div class="card">
       <h1>Keepnet Training</h1>
-      <p>Merhaba! Bu kişisel sekme Teams içinde basit bir karşılama ekranı sağlar.</p>
-      <a class="button" href="https://keepnetlabs.com" target="_blank" rel="noreferrer">Siteyi ziyaret et</a>
+      <p>Keepnet olarak senin için bir eğitim hazırladık.</p>
+      <a class="button" href="https://keepnetlabs.com" target="_blank" rel="noreferrer">Eğitime Git</a>
     </div>
   </div>
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    try { await microsoftTeams.app.initialize(); } catch {}
+    const p = new URLSearchParams(location.search);
+    const name = p.get('n');
+    if (name) {
+      const h1 = document.querySelector('h1');
+      if (h1) h1.textContent = `Merhaba ${name}`;
+    }
+  });
+</script>
 </body>
 
 </html>
