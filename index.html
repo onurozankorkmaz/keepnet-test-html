@@ -1,263 +1,66 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keepnet Cybersecurity Training</title>
-    <script src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .container {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-        }
-        .icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-        }
-        h1 {
-            color: #333;
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-        }
-        .training-title {
-            color: #555;
-            font-size: 1.1rem;
-            margin-bottom: 25px;
-            font-weight: 500;
-        }
-        .btn {
-            display: inline-block;
-            padding: 12px 25px;
-            margin: 8px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-        }
-        .btn-primary {
-            background: #007acc;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #005a9e;
-            transform: translateY(-2px);
-        }
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-        .btn-secondary:hover {
-            background: #e0e0e0;
-            transform: translateY(-2px);
-        }
-        .debug {
-            margin-top: 30px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-left: 4px solid #007acc;
-            text-align: left;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Keepnet Cybersecurity Training</title>
+  <script src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js"></script>
+  <style>
+    body { font-family: Segoe UI, sans-serif; margin:0; padding:20px; background:#f7f7fb; }
+    .wrap { max-width:560px; margin:0 auto; background:#fff; border-radius:12px; padding:28px; box-shadow:0 8px 24px rgba(0,0,0,.08) }
+    h1 { margin:0 0 10px 0; font-size:22px; color:#222 }
+    .title { margin:10px 0 24px; color:#555 }
+    .btn { display:inline-block; padding:12px 18px; border-radius:8px; text-decoration:none; margin-right:8px; font-weight:600 }
+    .btn-primary { background:#106ebe; color:#fff }
+    .btn-secondary { background:#eee; color:#333 }
+    .debug { margin-top:16px; padding:12px; background:#fafafa; border-left:4px solid #106ebe; font:12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; max-height:180px; overflow:auto }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="icon">🔒</div>
-        <h1>Cybersecurity Training</h1>
-        <div class="training-title" id="training-title">Yeni güvenlik eğitimi atandı</div>
-        
-        <a href="https://training.keepnetlabs.com/course/123" id="start-training" class="btn btn-primary">🎯 Eğitime Başla</a>
-        <a href="https://keepnetlabs.com/support" id="get-help" class="btn btn-secondary">❓ Yardım Al</a>
-        
-        <div class="debug" id="debug-area">
-            <strong>🔧 Debug Bilgileri:</strong><br>
-        </div>
-    </div>
+  <div class="wrap">
+    <h1>Cybersecurity Training</h1>
+    <div class="title" id="training-title">Yeni güvenlik eğitimi atandı</div>
+    <a id="start-training" href="https://training.keepnetlabs.com/course/123" class="btn btn-primary">Eğitime Başla</a>
+    <a id="get-help" href="https://keepnetlabs.com/support" class="btn btn-secondary">Yardım</a>
+    <div class="debug" id="debug"></div>
+  </div>
 
-    <script>
-        function log(message) {
-            const now = new Date();
-            const timestamp = now.toTimeString().slice(0, 8);
-            const debugArea = document.getElementById('debug-area');
-            debugArea.innerHTML += `${timestamp}: ${message}<br>`;
-            debugArea.scrollTop = debugArea.scrollHeight;
+  <script>
+    const log = (m)=>{const d=document.getElementById('debug');d.innerHTML += (new Date()).toTimeString().slice(0,8)+": "+m+"<br/>"; d.scrollTop=d.scrollHeight;}
+    const setUI = ({ title, trainingUrl }) => {
+      if (title) { document.getElementById('training-title').textContent = title; log("Title set: " + title); }
+      if (trainingUrl) {
+        document.getElementById('start-training').href = trainingUrl;
+        document.getElementById('get-help').href = trainingUrl + (trainingUrl.includes('?') ? '&' : '?') + 'help=true';
+        log("Links set: " + trainingUrl);
+      }
+    };
+    const decode = (b64) => { try { return atob(b64); } catch(e){ log("Base64 error: " + e.message); return null; } }
+
+    log("Page loading. Teams SDK: " + (typeof microsoftTeams !== 'undefined'));
+    if (typeof microsoftTeams === 'undefined') { log("Not in Teams host"); }
+
+    microsoftTeams?.app.initialize()
+      .then(() => {
+        log("Teams SDK initialized");
+        return microsoftTeams.app.getContext();
+      })
+      .then(ctx => {
+        log("Context.page: " + JSON.stringify(ctx.page || {}));
+        const sub = ctx.page?.subPageId;
+        if (!sub) { log("No subPageId in context"); return; }
+        const jsonText = decode(sub);
+        if (!jsonText) return;
+        log("Decoded: " + jsonText);
+        try {
+          const data = JSON.parse(jsonText);
+          setUI({ title: data.title, trainingUrl: data.trainingUrl });
+          if (data.enrollment) log("Enrollment: " + data.enrollment);
+        } catch (e) {
+          log("JSON parse error: " + e.message);
         }
-
-        function updateButtons(trainingUrl) {
-            const startBtn = document.getElementById('start-training');
-            const helpBtn = document.getElementById('get-help');
-            
-            if (trainingUrl) {
-                startBtn.href = trainingUrl;
-                helpBtn.href = trainingUrl + '?help=true';
-                log('Butonlar güncellendi: ' + trainingUrl);
-            } else {
-                log('Training URL boş, butonlar güncellenmedi');
-            }
-        }
-
-        function base64Decode(str) {
-            try {
-                return atob(str);
-            } catch (e) {
-                log('Base64 decode hatası: ' + e.message);
-                return null;
-            }
-        }
-
-        function parseDataFromUrlParams() {
-            // URL query parametrelerinden verileri al (Teams placeholder'lardan gelen)
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            log('URL Params bulundu:');
-            for (const [key, value] of urlParams.entries()) {
-                log(`  ${key}: ${value}`);
-            }
-            
-            const subEntityId = urlParams.get('subEntityId');
-            
-            if (subEntityId) {
-                log('subEntityId bulundu: ' + subEntityId);
-                
-                const decodedJson = base64Decode(subEntityId);
-                if (decodedJson) {
-                    log('Base64 decode edildi: ' + decodedJson);
-                    
-                    try {
-                        const data = JSON.parse(decodedJson);
-                        log('JSON parse edildi: ' + JSON.stringify(data));
-                        return data;
-                    } catch (e) {
-                        log('JSON parse hatası: ' + e.message);
-                    }
-                }
-            } else {
-                log('subEntityId parametresi bulunamadı');
-            }
-            
-            return null;
-        }
-
-        // Sayfa yüklenme
-        log('Sayfa yüklendi. Teams içinde: ' + (typeof microsoftTeams !== 'undefined'));
-        log('Current URL: ' + window.location.href);
-
-        if (typeof microsoftTeams !== 'undefined') {
-            log('Teams SDK bulundu, initialize ediliyor...');
-            
-            // DOM hazır olduğunda
-            document.addEventListener('DOMContentLoaded', function() {
-                log('DOM yüklendi');
-                
-                microsoftTeams.app.initialize().then(() => {
-                    log('Teams SDK initialize başarılı');
-                    
-                    // Teams context'ini al
-                    microsoftTeams.app.getContext().then(context => {
-                        log('Context alındı: ' + JSON.stringify(context, null, 2));
-                        
-                        // Context'ten subPageId'yi al
-                        if (context.page && context.page.subPageId) {
-                            log('Context subPageId bulundu: ' + context.page.subPageId);
-                            
-                            const decodedJson = base64Decode(context.page.subPageId);
-                            if (decodedJson) {
-                                log('Context Base64 decode edildi: ' + decodedJson);
-                                
-                                try {
-                                    const data = JSON.parse(decodedJson);
-                                    log('Context JSON parse edildi: ' + JSON.stringify(data));
-                                    
-                                    if (data.title) {
-                                        document.getElementById('training-title').textContent = data.title;
-                                        log('Title güncellendi (context): ' + data.title);
-                                    }
-                                    
-                                    if (data.trainingUrl) {
-                                        updateButtons(data.trainingUrl);
-                                    }
-                                    
-                                    if (data.enrollment) {
-                                        log('Enrollment ID: ' + data.enrollment);
-                                    }
-                                    
-                                    return; // Context'ten başarıyla aldık, URL params'a gerek yok
-                                } catch (e) {
-                                    log('Context JSON parse hatası: ' + e.message);
-                                }
-                            }
-                        }
-                        
-                        // Context'ten alamadık, URL params'tan dene
-                        const data = parseDataFromUrlParams();
-                        if (data) {
-                            if (data.title) {
-                                document.getElementById('training-title').textContent = data.title;
-                                log('Title güncellendi (URL): ' + data.title);
-                            }
-                            
-                            if (data.trainingUrl) {
-                                updateButtons(data.trainingUrl);
-                            }
-                            
-                            if (data.enrollment) {
-                                log('Enrollment ID: ' + data.enrollment);
-                            }
-                        } else {
-                            log('Hiçbir kaynaktan veri parse edilemedi');
-                        }
-                        
-                    }).catch(error => {
-                        log('Context alma hatası: ' + error.message);
-                        
-                        // Context alamazsa URL params'tan dene
-                        const data = parseDataFromUrlParams();
-                        if (data) {
-                            if (data.title) document.getElementById('training-title').textContent = data.title;
-                            if (data.trainingUrl) updateButtons(data.trainingUrl);
-                        }
-                    });
-                    
-                }).catch(error => {
-                    log('Teams SDK initialize hatası: ' + error.message);
-                    
-                    // Teams SDK başarısız olursa URL params'tan dene
-                    const data = parseDataFromUrlParams();
-                    if (data) {
-                        if (data.title) document.getElementById('training-title').textContent = data.title;
-                        if (data.trainingUrl) updateButtons(data.trainingUrl);
-                    }
-                });
-            });
-        } else {
-            log('Teams SDK bulunamadı, standart web sayfası olarak çalışıyor');
-            
-            // Teams dışında da URL params'tan dene
-            const data = parseDataFromUrlParams();
-            if (data) {
-                if (data.title) document.getElementById('training-title').textContent = data.title;
-                if (data.trainingUrl) updateButtons(data.trainingUrl);
-            }
-        }
-    </script>
+      })
+      .catch(err => log("Teams init/context error: " + err.message));
+  </script>
 </body>
 </html>
