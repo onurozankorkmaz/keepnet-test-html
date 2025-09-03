@@ -19,11 +19,10 @@
 </head>
 <body>
   <div class="wrap">
-    <strong><div class="title" id="training-title">Yeni güvenlik eğitimi atandı</div> </strong>
-    <div class="content" id="training-content">👋 Merhaba, <br/><br/> Size yeni bir cybersecurity training atanmıştır.</div>
+    <strong><div class="title" id="training-title">New security training assigned</div> </strong>
+    <div class="content" id="training-content">👋 Hello, <br/><br/> You have been assigned a new cybersecurity training.</div>
 
-    <a target="_blank" id="start-training" href="https://training.keepnetlabs.com/course/123" class="btn btn-primary" rel="noopener">Eğitime Başla</a>
-    <a target="_blank" id="get-help" href="https://keepnetlabs.com/support" class="btn btn-secondary" rel="noopener">Yardım</a>
+    <a target="_blank" id="start-training" href="https://training.keepnetlabs.com/course/123" class="btn btn-primary" rel="noopener">Start Training</a>
 
     <div class="debug" id="debug"></div>
   </div>
@@ -73,7 +72,6 @@
       if (trainingUrl) {
         const normalized = normalizeUrl(trainingUrl);
         document.getElementById('start-training').href = normalized;
-        document.getElementById('get-help').href = normalized + (normalized.includes('?') ? '&' : '?') + 'help=true';
         log("Links set: " + normalized);
         bindOpenInBrowser();
       }
