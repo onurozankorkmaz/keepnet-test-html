@@ -13,33 +13,74 @@
     .btn { display:inline-block; padding:12px 18px; border-radius:8px; text-decoration:none; margin-right:8px; font-weight:600 }
     .btn-primary { background:#106ebe; color:#fff }
     .btn-secondary { background:#eee; color:#333 }
-    .debug { margin-top:16px; padding:12px; background:#fafafa; border-left:4px solid #106ebe; font:12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; max-height:180px; overflow:auto }
+    .debug { margin-top:16px; padding:12px; background:#fafafa; border-left:4px solid #106ebe; font:12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; max-height:220px; overflow:auto; border-radius:6px }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Cybersecurity Training</h1>
     <div class="title" id="training-title">Yeni güvenlik eğitimi atandı</div>
-    <a target="_blank" id="start-training" href="https://training.keepnetlabs.com/course/123" class="btn btn-primary">Eğitime Başla</a>
-    <a target="_blank" id="get-help" href="https://keepnetlabs.com/support" class="btn btn-secondary">Yardım</a>
+
+    <a target="_blank" id="start-training" href="https://training.keepnetlabs.com/course/123" class="btn btn-primary" rel="noopener">Eğitime Başla</a>
+    <a target="_blank" id="get-help" href="https://keepnetlabs.com/support" class="btn btn-secondary" rel="noopener">Yardım</a>
+
     <div class="debug" id="debug"></div>
   </div>
 
   <script>
-    const log = (m)=>{const d=document.getElementById('debug');d.innerHTML += (new Date()).toTimeString().slice(0,8)+": "+m+"<br/>"; d.scrollTop=d.scrollHeight;}
+    // Basit logger
+    const log = (m) => {
+      const d = document.getElementById('debug');
+      d.innerHTML += (new Date()).toTimeString().slice(0,8) + ": " + m + "<br/>";
+      d.scrollTop = d.scrollHeight;
+    };
+
+    // HTML-escape kaynaklı &amp; varyasyonlarını düzelt
+    function normalizeUrl(u) {
+      if (!u) return u;
+      return u
+        .replace(/\\u0026amp;/gi, '&')
+        .replace(/&amp%3B/gi, '&')
+        .replace(/&amp;/gi, '&');
+    }
+
+    // Teams içindeyse sistem tarayıcısında aç
+    function bindOpenInBrowser() {
+      const btn = document.getElementById('start-training');
+      if (!btn) return;
+
+      btn.addEventListener('click', function (e) {
+        if (typeof microsoftTeams !== 'undefined' && microsoftTeams?.app?.openLink) {
+          e.preventDefault();
+          const url = this.href;
+          microsoftTeams.app.openLink(url);
+          log("Opening in system browser: " + url);
+        }
+      });
+    }
+
+    // UI güncelle
     const setUI = ({ title, trainingUrl }) => {
-      if (title) { document.getElementById('training-title').textContent = title; log("Title set: " + title); }
+      if (title) {
+        document.getElementById('training-title').textContent = title;
+        log("Title set: " + title);
+      }
       if (trainingUrl) {
-        document.getElementById('start-training').href = trainingUrl;
-        document.getElementById('get-help').href = trainingUrl + (trainingUrl.includes('?') ? '&' : '?') + 'help=true';
-        log("Links set: " + trainingUrl);
+        const normalized = normalizeUrl(trainingUrl);
+        document.getElementById('start-training').href = normalized;
+        document.getElementById('get-help').href = normalized + (normalized.includes('?') ? '&' : '?') + 'help=true';
+        log("Links set: " + normalized);
+        bindOpenInBrowser();
       }
     };
-    const decode = (b64) => { try { return atob(b64); } catch(e){ log("Base64 error: " + e.message); return null; } }
 
+    // Base64 decode helper
+    const decode = (b64) => {
+      try { return atob(b64); } catch (e) { log("Base64 error: " + e.message); return null; }
+    };
+
+    // Boot
     log("Page loading. Teams SDK: " + (typeof microsoftTeams !== 'undefined'));
-    if (typeof microsoftTeams === 'undefined') { log("Not in Teams host"); }
-
     microsoftTeams?.app.initialize()
       .then(() => {
         log("Teams SDK initialized");
@@ -47,13 +88,15 @@
       })
       .then(ctx => {
         log("Context.page: " + JSON.stringify(ctx.page || {}));
-        const sub = ctx.page?.subPageId;
+        const sub = ctx.page?.subPageId; // TeamsService deep link context -> subPageId (base64 json)
         if (!sub) { log("No subPageId in context"); return; }
+
         const jsonText = decode(sub);
         if (!jsonText) return;
+
         log("Decoded: " + jsonText);
         try {
-          const data = JSON.parse(jsonText);
+          const data = JSON.parse(jsonText); // { trainingUrl, title, enrollment }
           setUI({ title: data.title, trainingUrl: data.trainingUrl });
           if (data.enrollment) log("Enrollment: " + data.enrollment);
         } catch (e) {
