@@ -115,8 +115,45 @@
             }
         }
 
+        function base64Decode(str) {
+            try {
+                return atob(str);
+            } catch (e) {
+                log('Base64 decode hatası: ' + e.message);
+                return null;
+            }
+        }
+
+        function parseDataFromUrl() {
+            // URL'den data parametresini al
+            const urlParams = new URLSearchParams(window.location.search);
+            const dataParam = urlParams.get('data');
+            
+            if (dataParam) {
+                log('Data parametresi bulundu: ' + dataParam);
+                
+                const decodedJson = base64Decode(dataParam);
+                if (decodedJson) {
+                    log('Base64 decode edildi: ' + decodedJson);
+                    
+                    try {
+                        const data = JSON.parse(decodedJson);
+                        log('JSON parse edildi: ' + JSON.stringify(data));
+                        return data;
+                    } catch (e) {
+                        log('JSON parse hatası: ' + e.message);
+                    }
+                }
+            } else {
+                log('Data parametresi bulunamadı');
+            }
+            
+            return null;
+        }
+
         // Sayfa yüklenme
         log('Sayfa yüklendi. Teams içinde: ' + (typeof microsoftTeams !== 'undefined'));
+        log('Current URL: ' + window.location.href);
 
         if (typeof microsoftTeams !== 'undefined') {
             log('Teams SDK bulundu, initialize ediliyor...');
@@ -132,70 +169,62 @@
                     microsoftTeams.app.getContext().then(context => {
                         log('Context alındı: ' + JSON.stringify(context, null, 2));
                         
-                        // Activity verilerini context'ten oku
-                        if (context.activity) {
-                            log('Activity bulundu: ' + JSON.stringify(context.activity));
+                        // URL'den parametreleri parse et
+                        const data = parseDataFromUrl();
+                        if (data) {
+                            if (data.title) {
+                                document.getElementById('training-title').textContent = data.title;
+                                log('Title güncellendi: ' + data.title);
+                            }
                             
-                            // templateParameters'tan verileri çıkar
-                            if (context.activity.templateParameters) {
-                                const params = context.activity.templateParameters;
-                                log('Template parameters: ' + JSON.stringify(params));
-                                
-                                const trainingUrl = params.trainingUrl;
-                                const title = params.systemDefaultText;
-                                const enrollmentId = params.enrollmentId;
-                                
-                                if (title) {
-                                    document.getElementById('training-title').textContent = title;
-                                    log('Title güncellendi: ' + title);
-                                }
-                                
-                                if (trainingUrl) {
-                                    updateButtons(trainingUrl);
-                                }
-                                
-                                if (enrollmentId) {
-                                    log('Enrollment ID: ' + enrollmentId);
-                                }
-                            } else {
-                                log('Template parameters bulunamadı');
+                            if (data.trainingUrl) {
+                                updateButtons(data.trainingUrl);
+                            }
+                            
+                            if (data.enrollment) {
+                                log('Enrollment ID: ' + data.enrollment);
                             }
                         } else {
-                            log('Activity bilgisi yok');
-                        }
-                        
-                        // Alternatif: subEntityId kontrolü
-                        if (context.page && context.page.subEntityId) {
-                            log('subEntityId bulundu: ' + context.page.subEntityId);
-                            try {
-                                const data = JSON.parse(decodeURIComponent(context.page.subEntityId));
-                                log('subEntityId parse edildi: ' + JSON.stringify(data));
-                                
-                                if (data.title) {
-                                    document.getElementById('training-title').textContent = data.title;
-                                    log('Title güncellendi (subEntityId): ' + data.title);
-                                }
-                                
-                                if (data.trainingUrl) {
-                                    updateButtons(data.trainingUrl);
-                                }
-                            } catch (e) {
-                                log('subEntityId parse hatası: ' + e.message);
-                            }
-                        } else {
-                            log('subEntityId bulunamadı');
+                            log('URL\'den veri parse edilemedi');
                         }
                         
                     }).catch(error => {
                         log('Context alma hatası: ' + error.message);
+                        
+                        // Context alamazsa da URL parse'ı dene
+                        const data = parseDataFromUrl();
+                        if (data && data.title) {
+                            document.getElementById('training-title').textContent = data.title;
+                        }
+                        if (data && data.trainingUrl) {
+                            updateButtons(data.trainingUrl);
+                        }
                     });
                     
                 }).catch(error => {
                     log('Teams SDK initialize hatası: ' + error.message);
+                    
+                    // Teams SDK başarısız olursa da URL parse'ı dene
+                    const data = parseDataFromUrl();
+                    if (data && data.title) {
+                        document.getElementById('training-title').textContent = data.title;
+                    }
+                    if (data && data.trainingUrl) {
+                        updateButtons(data.trainingUrl);
+                    }
                 });
             });
         } else {
             log('Teams SDK bulunamadı, standart web sayfası olarak çalışıyor');
+            
+            // Teams dışında da URL parse'ı dene
+            const data = parseDataFromUrl();
+            if (data && data.title) {
+                document.getElementById('training-title').textContent = data.title;
+            }
+            if (data && data.trainingUrl) {
+                updateButtons(data.trainingUrl);
+            }
         }
     </script>
 </body>
