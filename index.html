@@ -1,100 +1,69 @@
-<!doctype html>
-<html lang="tr">
-
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Keepnet Training – Welcome</title>
-  <script src="https://res.cdn.office.net/teams-js/2.24.0/js/MicrosoftTeams.min.js"></script>
-
-  <script>
-    // URL parametrelerini oku
-    const urlParams = new URLSearchParams(window.location.search);
-    const trainingUrl = urlParams.get('trainingurl') || 'https://default-training-url.com';
-    const trainingTitle = urlParams.get('title') || 'Cybersecurity Training';
-    const userName = urlParams.get('user') || 'Kullanıcı';
-
-    // HTML'i güncelle
-    document.addEventListener('DOMContentLoaded', function () {
-      // Eğer title elementiniz varsa
-      const titleElement = document.querySelector('#training-title');
-      if (titleElement) {
-        titleElement.textContent = trainingTitle;
-      }
-
-      // User name varsa
-      const userElement = document.querySelector('#user-name');
-      if (userElement) {
-        userElement.textContent = userName;
-      }
-
-      // "Eğitime Git" butonunu güncelle
-      const trainingButton = document.querySelector('#training-button');
-      if (trainingButton) {
-        trainingButton.href = trainingUrl;
-        trainingButton.onclick = function () {
-          window.open(trainingUrl, '_blank');
-          return false;
-        };
-      }
-    });
-  </script>
-
-  <style>
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, Segoe UI, Arial
-    }
-
-    .wrap {
-      min-height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center
-    }
-
-    .card {
-      padding: 24px;
-      border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      max-width: 560px
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: 22px
-    }
-
-    p {
-      margin: 0 0 16px;
-      line-height: 1.5
-    }
-
-    a.button {
-      display: inline-block;
-      padding: 10px 16px;
-      border-radius: 10px;
-      text-decoration: none;
-      border: 1px solid #d1d5db
-    }
-
-    a.button:hover {
-      background: #f3f4f6
-    }
-  </style>
+    <script src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js"></script>
 </head>
-
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Keepnet Training</h1>
-      <p>Keepnet olarak senin için bir eğitim hazırladık.</p>
-      <a class="button" href="https://keepnetlabs.com" target="_blank" rel="noreferrer">Eğitime Git</a>
-      <a id="training-button" href="#" class="btn btn-primary">🎯 Eğitime Git 2</a>
-    </div>
-  </div>
-</body>
+    <h1 id="training-title">Keepnet Training</h1>
+    <p>Keepnet olarak senin için bir eğitim hazırladık.</p>
+    
+    <a id="training-button" href="#" class="btn">🎯 Eğitime Git</a>
+    <a id="training-button2" href="#" class="btn">🎯 Eğitime Git 2</a>
 
+    <script>
+        // Teams SDK başlatma
+        microsoftTeams.app.initialize().then(() => {
+            // Context'i al
+            microsoftTeams.app.getContext().then((context) => {
+                console.log('Teams context:', context);
+                
+                // subEntityId'den parametreleri oku
+                if (context.page && context.page.subEntityId) {
+                    try {
+                        const params = JSON.parse(decodeURIComponent(context.page.subEntityId));
+                        console.log('Parametreler:', params);
+                        
+                        // HTML'i güncelle
+                        if (params.title) {
+                            document.getElementById('training-title').textContent = params.title;
+                        }
+                        
+                        if (params.trainingurl) {
+                            const button1 = document.getElementById('training-button');
+                            const button2 = document.getElementById('training-button2');
+                            
+                            button1.href = params.trainingurl;
+                            button2.href = params.trainingurl;
+                            
+                            button1.onclick = () => window.open(params.trainingurl, '_blank');
+                            button2.onclick = () => window.open(params.trainingurl, '_blank');
+                        }
+                    } catch (e) {
+                        console.error('subEntityId parse hatası:', e);
+                        // Fallback: URL parametrelerini dene
+                        tryUrlParams();
+                    }
+                } else {
+                    // Fallback: URL parametrelerini dene
+                    tryUrlParams();
+                }
+            });
+        });
+
+        // Fallback: Normal URL parametreleri
+        function tryUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const trainingUrl = urlParams.get('trainingurl');
+            const title = urlParams.get('title');
+            
+            if (title) {
+                document.getElementById('training-title').textContent = title;
+            }
+            if (trainingUrl) {
+                document.getElementById('training-button').href = trainingUrl;
+                document.getElementById('training-button2').href = trainingUrl;
+            }
+        }
+    </script>
+</body>
 </html>
