@@ -10,6 +10,7 @@
     .wrap { max-width:560px; margin:0 auto; background:#fff; border-radius:12px; padding:28px; box-shadow:0 8px 24px rgba(0,0,0,.08) }
     h1 { margin:0 0 10px 0; font-size:22px; color:#222 }
     .title { margin:10px 0 24px; color:#555 }
+    .content { margin:0 0 24px; color:#666; line-height:1.5; white-space:pre-line }
     .btn { display:inline-block; padding:12px 18px; border-radius:8px; text-decoration:none; margin-right:8px; font-weight:600 }
     .btn-primary { background:#106ebe; color:#fff }
     .btn-secondary { background:#eee; color:#333 }
@@ -20,10 +21,12 @@
   <div class="wrap">
     <h1>Cybersecurity Training</h1>
     <div class="title" id="training-title">Yeni güvenlik eğitimi atandı</div>
+    <div class="content" id="training-content">👋 Merhaba,\nSize yeni bir cybersecurity training atanmıştır.</div>
 
-    <a target="_blank" id="start-training" href="https://keepnetlabs.com" class="btn btn-primary" rel="noopener">Eğitime Başla</a>
+    <a target="_blank" id="start-training" href="https://training.keepnetlabs.com/course/123" class="btn btn-primary" rel="noopener">Eğitime Başla</a>
+    <a target="_blank" id="get-help" href="https://keepnetlabs.com/support" class="btn btn-secondary" rel="noopener">Yardım</a>
 
-    <div class="debug" style="visibility: hidden;" id="debug"></div>
+    <div class="debug" id="debug"></div>
   </div>
 
   <script>
@@ -59,10 +62,14 @@
     }
 
     // UI güncelle
-    const setUI = ({ title, trainingUrl }) => {
+    const setUI = ({ title, trainingUrl, activityContent }) => {
       if (title) {
         document.getElementById('training-title').textContent = title;
         log("Title set: " + title);
+      }
+      if (activityContent) {
+        document.getElementById('training-content').textContent = activityContent;
+        log("Content set: " + activityContent);
       }
       if (trainingUrl) {
         const normalized = normalizeUrl(trainingUrl);
@@ -95,9 +102,12 @@
 
         log("Decoded: " + jsonText);
         try {
-          const data = JSON.parse(jsonText); // { trainingUrl, title, enrollment }
-          setUI({ title: data.title, trainingUrl: data.trainingUrl });
-          if (data.enrollment) log("Enrollment: " + data.enrollment);
+          const data = JSON.parse(jsonText); // { trainingUrl, title, activityContent }
+          setUI({ 
+            title: data.title, 
+            trainingUrl: data.trainingUrl, 
+            activityContent: data.activityContent 
+          });
         } catch (e) {
           log("JSON parse error: " + e.message);
         }
