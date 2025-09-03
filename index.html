@@ -1,7 +1,24 @@
-<!DOCTYPE html>
 <html>
 <head>
     <script src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js"></script>
+    <style>
+        .btn { 
+            display: inline-block; 
+            padding: 10px 20px; 
+            background: #0078d4; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            margin: 10px;
+        }
+        #debug { 
+            background: #f3f2f1; 
+            padding: 10px; 
+            margin: 10px 0; 
+            font-family: monospace; 
+            font-size: 12px;
+        }
+    </style>
 </head>
 <body>
     <h1 id="training-title">Keepnet Training</h1>
@@ -9,61 +26,118 @@
     
     <a id="training-button" href="#" class="btn">🎯 Eğitime Git</a>
     <a id="training-button2" href="#" class="btn">🎯 Eğitime Git 2</a>
+    
+    <div id="debug">Debug bilgisi yükleniyor...</div>
 
     <script>
-        // Teams SDK başlatma
-        microsoftTeams.app.initialize().then(() => {
-            // Context'i al
-            microsoftTeams.app.getContext().then((context) => {
-                console.log('Teams context:', context);
+        let debugInfo = [];
+        
+        function log(message) {
+            debugInfo.push(new Date().toLocaleTimeString() + ": " + message);
+            document.getElementById('debug').innerHTML = debugInfo.join('<br>');
+        }
+        
+        function updateButtons(trainingUrl) {
+            log('Butonları güncelleniyor: ' + trainingUrl);
+            const button1 = document.getElementById('training-button');
+            const button2 = document.getElementById('training-button2');
+            
+            if (button1 && button2) {
+                button1.href = trainingUrl;
+                button2.href = trainingUrl;
                 
-                // subEntityId'den parametreleri oku
-                if (context.page && context.page.subEntityId) {
-                    try {
-                        const params = JSON.parse(decodeURIComponent(context.page.subEntityId));
-                        console.log('Parametreler:', params);
-                        
-                        // HTML'i güncelle
-                        if (params.title) {
-                            document.getElementById('training-title').textContent = params.title;
-                        }
-                        
-                        if (params.trainingurl) {
-                            const button1 = document.getElementById('training-button');
-                            const button2 = document.getElementById('training-button2');
-                            
-                            button1.href = params.trainingurl;
-                            button2.href = params.trainingurl;
-                            
-                            button1.onclick = () => window.open(params.trainingurl, '_blank');
-                            button2.onclick = () => window.open(params.trainingurl, '_blank');
-                        }
-                    } catch (e) {
-                        console.error('subEntityId parse hatası:', e);
-                        // Fallback: URL parametrelerini dene
-                        tryUrlParams();
-                    }
-                } else {
-                    // Fallback: URL parametrelerini dene
-                    tryUrlParams();
-                }
-            });
-        });
-
-        // Fallback: Normal URL parametreleri
+                // Teams'de window.open yerine href kullan
+                button1.setAttribute('target', '_blank');
+                button2.setAttribute('target', '_blank');
+                
+                log('Butonlar güncellendi!');
+            } else {
+                log('Butonlar bulunamadı!');
+            }
+        }
+        
+        // URL parametrelerini dene (fallback)
         function tryUrlParams() {
+            log('URL parametreleri deneniyor...');
             const urlParams = new URLSearchParams(window.location.search);
             const trainingUrl = urlParams.get('trainingurl');
             const title = urlParams.get('title');
+            
+            log('URL params - trainingUrl: ' + trainingUrl);
+            log('URL params - title: ' + title);
             
             if (title) {
                 document.getElementById('training-title').textContent = title;
             }
             if (trainingUrl) {
-                document.getElementById('training-button').href = trainingUrl;
-                document.getElementById('training-button2').href = trainingUrl;
+                updateButtons(trainingUrl);
             }
         }
+        
+        // Teams içinde mi kontrol et
+        function isInTeams() {
+            return window.parent !== window || window.location.ancestorOrigins?.length > 0;
+        }
+        
+        log('Sayfa yüklendi. Teams içinde: ' + isInTeams());
+        
+        // Teams SDK deneyelim
+        if (typeof microsoftTeams !== 'undefined') {
+            log('Teams SDK bulundu, initialize ediliyor...');
+            
+            microsoftTeams.app.initialize().then(() => {
+                log('Teams SDK initialize başarılı');
+                
+                microsoftTeams.app.getContext().then((context) => {
+                    log('Context alındı: ' + JSON.stringify(context, null, 2));
+                    
+                    // subEntityId kontrol et
+                    if (context.page && context.page.subEntityId) {
+                        log('subEntityId bulundu: ' + context.page.subEntityId);
+                        try {
+                            const params = JSON.parse(decodeURIComponent(context.page.subEntityId));
+                            log('Parametreler parse edildi: ' + JSON.stringify(params));
+                            
+                            if (params.title) {
+                                document.getElementById('training-title').textContent = params.title;
+                                log('Title güncellendi: ' + params.title);
+                            }
+                            
+                            if (params.trainingurl) {
+                                updateButtons(params.trainingurl);
+                            }
+                        } catch (e) {
+                            log('subEntityId parse hatası: ' + e.message);
+                            tryUrlParams();
+                        }
+                    } else {
+                        log('subEntityId bulunamadı, URL params deneniyor');
+                        tryUrlParams();
+                    }
+                }).catch(e => {
+                    log('Context alma hatası: ' + e.message);
+                    tryUrlParams();
+                });
+            }).catch(e => {
+                log('Teams SDK initialize hatası: ' + e.message);
+                tryUrlParams();
+            });
+        } else {
+            log('Teams SDK bulunamadı, URL params deneniyor');
+            tryUrlParams();
+        }
+        
+        // DOMContentLoaded ile de deneyelim
+        document.addEventListener('DOMContentLoaded', function() {
+            log('DOM yüklendi');
+            // 2 saniye sonra tekrar dene
+            setTimeout(() => {
+                if (document.getElementById('training-button').href === window.location.href + '#') {
+                    log('Butonlar hala güncel değil, tekrar deneniyor...');
+                    tryUrlParams();
+                }
+            }, 2000);
+        });
     </script>
 </body>
 </html>
