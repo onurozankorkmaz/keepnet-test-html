@@ -319,6 +319,27 @@
       })
       .catch(err => err.message);
   </script>
+  <script>
+  function insertBreakAfterFirstComma() {
+  debugger;
+    const el = document.getElementById("training-title");
+    if (!el) return;
+
+    const text = el.textContent || "";
+    const idx = text.indexOf(",");
+
+    if (idx !== -1) {
+      // virgül dahil öncesi + <br/> + sonrası
+      const before = text.slice(0, idx + 1);
+      const after = text.slice(idx + 1).trimStart();
+      el.innerHTML = before + "<br/>" + after;
+    }
+  }
+
+  // sayfa yüklenince veya UI setUI sonrasında çağırabilirsin
+  insertBreakAfterFirstComma();
+</script>
+
 </body>
 
 <style>
