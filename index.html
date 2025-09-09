@@ -271,7 +271,6 @@
           e.preventDefault();
           const url = this.href;
           microsoftTeams.app.openLink(url);
-          log("Opening in system browser: " + url);
         }
       });
     }
@@ -280,16 +279,13 @@
     const setUI = ({ title, trainingUrl, activityContent }) => {
       if (title) {
         document.getElementById('training-title').textContent = title;
-        log("Title set: " + title);
       }
       if (activityContent) {
         document.getElementById('training-content').textContent = activityContent;
-        log("Content set: " + activityContent);
       }
       if (trainingUrl) {
         const normalized = normalizeUrl(trainingUrl);
         document.getElementById('start-training').href = normalized;
-        log("Links set: " + normalized);
         bindOpenInBrowser();
       }
     };
@@ -300,21 +296,17 @@
     };
 
     // Boot
-    log("Page loading. Teams SDK: " + (typeof microsoftTeams !== 'undefined'));
     microsoftTeams?.app.initialize()
       .then(() => {
-        log("Teams SDK initialized");
         return microsoftTeams.app.getContext();
       })
       .then(ctx => {
-        log("Context.page: " + JSON.stringify(ctx.page || {}));
         const sub = ctx.page?.subPageId; // TeamsService deep link context -> subPageId (base64 json)
         if (!sub) { log("No subPageId in context"); return; }
 
         const jsonText = decode(sub);
         if (!jsonText) return;
 
-        log("Decoded: " + jsonText);
         try {
           const data = JSON.parse(jsonText); // { trainingUrl, title, activityContent }
           setUI({
@@ -323,10 +315,9 @@
             activityContent: data.activityContent
           });
         } catch (e) {
-          log("JSON parse error: " + e.message);
         }
       })
-      .catch(err => log("Teams init/context error: " + err.message));
+      .catch(err => err.message);
   </script>
 </body>
 
@@ -416,5 +407,4 @@
     }
   }
 </style>
-
-</html>>
+</html>
