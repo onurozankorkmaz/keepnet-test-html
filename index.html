@@ -171,7 +171,7 @@
 											  <!--[if mso]><table width=100% cellpadding=0 cellspacing=0 border=0><tr><td style="padding-right: 10px; padding-left: 10px; padding-top: 10px; padding-bottom: 10px; font-family: Arial, sans-serif"><![endif]-->
 											  <div id="irxun" style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; box-sizing: border-box; color: #000000; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.5; padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px;">
 												<div id="itbjx" style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; box-sizing: border-box; line-height: 1.5; font-size: 12px; color: #000000; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; mso-line-height-alt: 18px;">
-												  <p id="training-title" style=" display:none; box-sizing: border-box; font-size: 14px; line-height: 1.5; word-break: break-word; mso-line-height-alt: 21px; margin: 0;">Dear {FULLNAME},
+												  <p id="training-fullname" style="box-sizing: border-box; font-size: 14px; line-height: 1.5; word-break: break-word; mso-line-height-alt: 21px; margin: 0;">Dear {FULLNAME},
 												  </p>
 												  <br id="ih383f" style="box-sizing: border-box;">
 												  <p id="training-content" style="box-sizing: border-box; font-size: 14px; line-height: 1.5; word-break: break-word; mso-line-height-alt: 21px; margin: 0;">The cyber awareness training &quot;{TRAININGNAME}&quot; is assigned to you.
@@ -276,9 +276,9 @@
     }
 
     // UI güncelle
-    const setUI = ({ title, trainingUrl, activityContent }) => {
-      if (title) {
-        document.getElementById('training-title').textContent = title;
+    const setUI = ({ title, trainingUrl, activityContent, fullName }) => {
+      if (fullName) {
+        document.getElementById('training-fullname').textContent = fullName;
       }
       if (activityContent) {
         document.getElementById('training-content').textContent = activityContent;
